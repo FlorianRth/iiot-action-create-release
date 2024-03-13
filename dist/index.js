@@ -29120,12 +29120,6 @@ const validateVersion = (strippedVersion, destinationBranch) => {
       process.exit()
     }
   }
-  if (destinationBranch === 'develop') {
-    if (!strippedVersion.isPreview) {
-      core.setFailed('Cannot merge non-preview version into develop')
-      process.exit()
-    }
-  }
 }
 
 module.exports = {
@@ -29152,10 +29146,8 @@ async function run() {
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
-    const releaseToken = core.getInput('release-token', { required: true })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
-    const releaseOctokit = github.getOctokit(releaseToken)
     const payload = github.context.payload
 
     if (!payload.pull_request.merged) {
@@ -29167,7 +29159,9 @@ async function run() {
       throw new Error('This event is not a pull request event.')
     }
 
-    const destinationBranch = payload.pull_request.base.ref
+    console.log(payload)
+
+    const destinationBranch = payload.base.ref
     helpers.validateVersion(strippedVersion, destinationBranch)
 
     const releases = await octokit.rest.repos.listReleases({
@@ -29188,7 +29182,7 @@ async function run() {
           'Higher preview version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          releaseOctokit,
+          octokit,
           version,
           destinationBranch,
           version,
@@ -29196,7 +29190,6 @@ async function run() {
         )
 
         console.log(`Release created: ${response.html_url}`)
-        return
       }
       console.log(
         'Preview version is not higher than the latest preview release - No release will be created.'
@@ -29213,7 +29206,7 @@ async function run() {
           'Higher stable version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          releaseOctokit,
+          octokit,
           version,
           destinationBranch,
           version,
@@ -29221,16 +29214,11 @@ async function run() {
         )
 
         console.log(`Release created: ${response.html_url}`)
-        return
       }
       console.log(
         'Stable version is not higher than the latest stable release - No release will be created.'
       )
     }
-
-    console.log('Latest stable release: ', latestReleases.latestStableRelease)
-    console.log('Latest preview release: ', latestReleases.latestPreviewRelease)
-    console.log('Destination branch: ', destinationBranch)
   } catch (error) {
     // Fail the workflow run if an error occurs
     core.setFailed(error.message)
