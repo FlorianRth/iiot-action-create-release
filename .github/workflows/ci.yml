@@ -22,4 +22,4 @@ jobs:
         with:
           version: 0.0.2-preview.2
           token: ${{github.token}}
-          release-token: ${{secrets.GH_TOKEN}}
+          release-token: ${{secrets.RELEASE_TOKEN}}
