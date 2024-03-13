@@ -28999,7 +28999,7 @@ const createRelease = async (
       target_commitish: targetCommitish,
       name: releaseName,
       body,
-      generateReleaseNotes: generateReleaseNotes === 'true'
+      generate_release_notes: generateReleaseNotes === 'true'
     })
 
     return response.data
