@@ -29034,16 +29034,19 @@ const checkVersionFormat = version => {
 
   if (parts.length > 2) {
     core.setFailed('Invalid version format')
+    process.exit()
   }
 
   const numbers = parts[0].split('.')
   if (numbers.length !== 3) {
     core.setFailed('Invalid version format')
+    process.exit()
   }
 
   for (const number of numbers) {
     if (isNaN(number)) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
   }
 
@@ -29051,12 +29054,15 @@ const checkVersionFormat = version => {
     const previewParts = parts[1].split('.')
     if (previewParts.length !== 2) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
     if (previewParts[0] !== 'preview') {
       core.setFailed('Invalid version format')
+      process.exit()
     }
     if (isNaN(previewParts[1])) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
   }
 }
@@ -29111,11 +29117,13 @@ const validateVersion = (strippedVersion, destinationBranch) => {
   if (destinationBranch === 'main' || destinationBranch === 'master') {
     if (strippedVersion.isPreview) {
       core.setFailed('Cannot merge preview version into main / master')
+      process.exit()
     }
   }
   if (destinationBranch === 'develop') {
     if (!strippedVersion.isPreview) {
       core.setFailed('Cannot merge non-preview version into develop')
+      process.exit()
     }
   }
 }
@@ -29141,6 +29149,11 @@ const helpers = __nccwpck_require__(8505)
 
 async function run() {
   try {
+    if (!github.event.pull_request.merged) {
+      core.setFailed('No merge detected - No release will be created.')
+      process.exit()
+    }
+
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })

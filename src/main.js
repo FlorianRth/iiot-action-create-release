@@ -4,6 +4,11 @@ const helpers = require('./helpers')
 
 async function run() {
   try {
+    if (!github.event.pull_request.merged) {
+      core.setFailed('No merge detected - No release will be created.')
+      process.exit()
+    }
+
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
