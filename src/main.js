@@ -11,15 +11,6 @@ async function run() {
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
 
-    if (!payload.pull_request.merged) {
-      core.setFailed('No merge detected - No release will be created.')
-      process.exit()
-    }
-
-    if (!payload.pull_request) {
-      throw new Error('This event is not a pull request event.')
-    }
-
     console.log(payload)
 
     const destinationBranch = payload.base.ref
