@@ -7,6 +7,9 @@ async function run() {
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
+    const generateReleaseNotes = core.getInput('generate-release-notes', {
+      required: false
+    })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
@@ -36,10 +39,12 @@ async function run() {
           version,
           destinationBranch,
           version,
-          `TEST Automated release for version ${version} \\(°-°)/`
+          `Automated release for version ${version}`,
+          generateReleaseNotes
         )
 
         console.log(`Release created: ${response.html_url}`)
+        return
       }
       console.log(
         'Preview version is not higher than the latest preview release - No release will be created.'
@@ -60,10 +65,12 @@ async function run() {
           version,
           destinationBranch,
           version,
-          `TEST Automated release for version ${version} \\(°-°)/`
+          `Automated release for version ${version}`,
+          generateReleaseNotes
         )
 
         console.log(`Release created: ${response.html_url}`)
+        return
       }
       console.log(
         'Stable version is not higher than the latest stable release - No release will be created.'

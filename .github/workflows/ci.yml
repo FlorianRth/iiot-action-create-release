@@ -19,5 +19,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          version: 0.0.2-preview.4
+          version: 0.0.2-preview.6
           token: ${{github.token}}
+          generate-release-notes: true
