@@ -7,8 +7,10 @@ async function run() {
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
+    const releaseToken = core.getInput('release-token', { required: true })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
+    const releaseOctokit = github.getOctokit(releaseToken)
     const payload = github.context.payload
 
     if (!payload.pull_request.merged) {
@@ -41,7 +43,7 @@ async function run() {
           'Higher preview version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          octokit,
+          releaseOctokit,
           version,
           destinationBranch,
           version,
@@ -66,7 +68,7 @@ async function run() {
           'Higher stable version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          octokit,
+          releaseOctokit,
           version,
           destinationBranch,
           version,
