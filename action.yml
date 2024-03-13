@@ -1,0 +1,15 @@
+name: 'Create Release if newer version is detected'
+description:
+  'When there is a newer version, than the latest release -> Create new release '
+
+inputs:
+  version:
+    description: 'Version from package.json'
+    required: true
+  token:
+    description: Github Token (e.g. ${{ secrets.GITHUB_TOKEN }})
+    required: true
+
+runs:
+  using: node20
+  main: dist/index.js
