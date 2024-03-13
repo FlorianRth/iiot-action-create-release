@@ -16,7 +16,6 @@ jobs:
   test-action:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         id: checkout
@@ -27,5 +26,4 @@ jobs:
         uses: ./
         with:
           version: 1.0.1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+          token: ${{github.token}}

@@ -6,7 +6,7 @@ async function run() {
   try {
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
-    const token = process.env.GITHUB_TOKEN
+    const token = core.getInput('token', { required: true })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
