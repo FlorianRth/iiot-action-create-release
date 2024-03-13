@@ -27,4 +27,4 @@ jobs:
         uses: ./
         with:
           version: 1.0.1
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
