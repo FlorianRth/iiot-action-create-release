@@ -29149,17 +29149,17 @@ const helpers = __nccwpck_require__(8505)
 
 async function run() {
   try {
-    if (!github.event.pull_request.merged) {
-      core.setFailed('No merge detected - No release will be created.')
-      process.exit()
-    }
-
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
+
+    if (!payload.pull_request.merged) {
+      core.setFailed('No merge detected - No release will be created.')
+      process.exit()
+    }
 
     if (!payload.pull_request) {
       throw new Error('This event is not a pull request event.')
