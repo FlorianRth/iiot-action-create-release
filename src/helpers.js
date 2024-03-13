@@ -13,6 +13,8 @@ const createRelease = async (
     const owner = github.context.repo.owner
     const repo = github.context.repo.repo
 
+    console.log('Generate Release Notes: ', generateReleaseNotes === 'true')
+
     const response = await octokit.rest.repos.createRelease({
       owner,
       repo,
