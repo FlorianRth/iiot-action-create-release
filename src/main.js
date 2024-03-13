@@ -51,7 +51,6 @@ async function run() {
         )
 
         console.log(`Release created: ${response.html_url}`)
-        return
       }
       console.log(
         'Preview version is not higher than the latest preview release - No release will be created.'
@@ -76,16 +75,11 @@ async function run() {
         )
 
         console.log(`Release created: ${response.html_url}`)
-        return
       }
       console.log(
         'Stable version is not higher than the latest stable release - No release will be created.'
       )
     }
-
-    console.log('Latest stable release: ', latestReleases.latestStableRelease)
-    console.log('Latest preview release: ', latestReleases.latestPreviewRelease)
-    console.log('Destination branch: ', destinationBranch)
   } catch (error) {
     // Fail the workflow run if an error occurs
     core.setFailed(error.message)
