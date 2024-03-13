@@ -29100,14 +29100,16 @@ async function run() {
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
 
+    const test = 'test'
+
     if (!payload.pull_request) {
       throw new Error('This event is not a pull request event.')
     }
 
     const destinationBranch = payload.pull_request.base.ref
 
-    const releases = await octokit.repos.listReleases({
-      owner: payload.repository.owner.login,
+    const releases = await octokit.rest.repos.listReleases({
+      owner: payload.repository.owner.name,
       repo: payload.repository.name
     })
 
