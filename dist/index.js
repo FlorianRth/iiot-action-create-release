@@ -28976,6 +28976,33 @@ function wrappy (fn, cb) {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const core = __nccwpck_require__(2186)
+const github = __nccwpck_require__(5438)
+
+const createRelease = async (
+  octokit,
+  tagName,
+  targetCommitish,
+  releaseName,
+  body
+) => {
+  try {
+    const owner = github.context.repo.owner
+    const repo = github.context.repo.repo
+
+    const response = await octokit.repos.createRelease({
+      owner,
+      repo,
+      tag_name: tagName,
+      target_commitish: targetCommitish,
+      name: releaseName,
+      body
+    })
+
+    return response.data
+  } catch (error) {
+    core.setFailed(`Failed to create release: ${error.message}`)
+  }
+}
 
 const stripVersion = version => {
   // major.minor.patch
@@ -29044,14 +29071,15 @@ const getLatestReleases = releases => {
     if (/^\d+\.\d+\.\d+$/.test(release.tag_name)) {
       if (
         !latestStableRelease ||
-        compareVersions(release.tag_name, latestStableRelease) > 0
+        isVersionAGreaterThanVersionB(release.tag_name, latestStableRelease) > 0
       ) {
         latestStableRelease = release.tag_name
       }
     } else if (/^\d+\.\d+\.\d+-preview\.\d+$/.test(release.tag_name)) {
       if (
         !latestPreviewRelease ||
-        compareVersions(release.tag_name, latestPreviewRelease) > 0
+        isVersionAGreaterThanVersionB(release.tag_name, latestPreviewRelease) >
+          0
       ) {
         latestPreviewRelease = release.tag_name
       }
@@ -29061,7 +29089,7 @@ const getLatestReleases = releases => {
   return { latestStableRelease, latestPreviewRelease }
 }
 
-const compareVersions = (versionA, versionB) => {
+const isVersionAGreaterThanVersionB = (versionA, versionB) => {
   const partsA = versionA.split('.').map(part => parseInt(part))
   const partsB = versionB.split('.').map(part => parseInt(part))
 
@@ -29079,7 +29107,27 @@ const compareVersions = (versionA, versionB) => {
   return 0
 }
 
-module.exports = { stripVersion, checkVersionFormat, getLatestReleases }
+const validateVersion = (strippedVersion, destinationBranch) => {
+  if (destinationBranch === 'main' || destinationBranch === 'master') {
+    if (strippedVersion.isPreview) {
+      core.setFailed('Cannot merge preview version into main / master')
+    }
+  }
+  if (destinationBranch === 'develop') {
+    if (!strippedVersion.isPreview) {
+      core.setFailed('Cannot merge non-preview version into develop')
+    }
+  }
+}
+
+module.exports = {
+  stripVersion,
+  checkVersionFormat,
+  getLatestReleases,
+  isVersionAGreaterThanVersionB,
+  validateVersion,
+  createRelease
+}
 
 
 /***/ }),
@@ -29105,6 +29153,7 @@ async function run() {
     }
 
     const destinationBranch = payload.pull_request.base.ref
+    helpers.validateVersion(strippedVersion, destinationBranch)
 
     const releases = await octokit.rest.repos.listReleases({
       owner: payload.repository.owner.login,
@@ -29112,6 +29161,57 @@ async function run() {
     })
 
     const latestReleases = helpers.getLatestReleases(releases.data)
+
+    if (destinationBranch === 'develop') {
+      if (
+        helpers.isVersionAGreaterThanVersionB(
+          version,
+          latestReleases.latestPreviewRelease
+        )
+      ) {
+        console.log(
+          'Higher preview version detected - Release will be created ...'
+        )
+        const response = await helpers.createRelease(
+          octokit,
+          version,
+          destinationBranch,
+          version,
+          `TEST Automated release for version ${version} \\(°-°)/`
+        )
+
+        console.log(`Release created: ${response.html_url}`)
+        return
+      }
+      console.log(
+        'Preview version is not higher than the latest preview release - No release will be created.'
+      )
+    }
+    if (destinationBranch === 'master' || destinationBranch === 'main') {
+      if (
+        helpers.isVersionAGreaterThanVersionB(
+          version,
+          latestReleases.latestStableRelease
+        )
+      ) {
+        console.log(
+          'Higher stable version detected - Release will be created ...'
+        )
+        const response = await helpers.createRelease(
+          octokit,
+          version,
+          destinationBranch,
+          version,
+          `TEST Automated release for version ${version} \\(°-°)/`
+        )
+
+        console.log(`Release created: ${response.html_url}`)
+        return
+      }
+      console.log(
+        'Stable version is not higher than the latest stable release - No release will be created.'
+      )
+    }
 
     console.log('Latest stable release: ', latestReleases.latestStableRelease)
     console.log('Latest preview release: ', latestReleases.latestPreviewRelease)
