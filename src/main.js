@@ -19,7 +19,7 @@ async function run() {
 
     const destinationBranch = payload.pull_request.base.ref
 
-    const releases = await octokit.repos.listReleases({
+    const releases = await octokit.rest.repos.listReleases({
       owner: payload.repository.owner.login,
       repo: payload.repository.name
     })
