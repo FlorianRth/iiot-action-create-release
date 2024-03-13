@@ -9,9 +9,10 @@ inputs:
   token:
     description: Github Token ( e.g. secrets.GITHUB_TOKEN )
     required: true
-  release-token:
-    description: Token with permission to create a release
-    required: true
+  generate-release-notes:
+    description: Generate release notes
+    required: false
+    default: 'true'
 
 runs:
   using: node20

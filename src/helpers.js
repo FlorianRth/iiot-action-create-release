@@ -6,7 +6,8 @@ const createRelease = async (
   tagName,
   targetCommitish,
   releaseName,
-  body
+  body,
+  generateReleaseNotes
 ) => {
   try {
     const owner = github.context.repo.owner
@@ -18,7 +19,8 @@ const createRelease = async (
       tag_name: tagName,
       target_commitish: targetCommitish,
       name: releaseName,
-      body
+      body,
+      generateReleaseNotes: generateReleaseNotes === 'true'
     })
 
     return response.data
