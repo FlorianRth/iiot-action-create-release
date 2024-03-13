@@ -29079,7 +29079,7 @@ const compareVersions = (versionA, versionB) => {
   return 0
 }
 
-module.exports = { stripVersion, checkVersionFormat }
+module.exports = { stripVersion, checkVersionFormat, getLatestReleases }
 
 
 /***/ }),
