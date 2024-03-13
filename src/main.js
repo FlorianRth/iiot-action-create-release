@@ -11,9 +11,9 @@ async function run() {
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
 
-    console.log(payload)
+    console.log(github.context)
 
-    const destinationBranch = payload.base.ref
+    const destinationBranch = github.context.ref
     helpers.validateVersion(strippedVersion, destinationBranch)
 
     const releases = await octokit.rest.repos.listReleases({
