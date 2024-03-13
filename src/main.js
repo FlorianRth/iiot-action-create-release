@@ -7,10 +7,8 @@ async function run() {
     const version = core.getInput('version', { required: true })
     helpers.checkVersionFormat(version)
     const token = core.getInput('token', { required: true })
-    const releaseToken = core.getInput('release-token', { required: true })
     const strippedVersion = helpers.stripVersion(version)
     const octokit = github.getOctokit(token)
-    const releaseOctokit = github.getOctokit(releaseToken)
     const payload = github.context.payload
 
     if (!payload.pull_request.merged) {
@@ -22,7 +20,9 @@ async function run() {
       throw new Error('This event is not a pull request event.')
     }
 
-    const destinationBranch = payload.pull_request.base.ref
+    console.log(payload)
+
+    const destinationBranch = payload.base.ref
     helpers.validateVersion(strippedVersion, destinationBranch)
 
     const releases = await octokit.rest.repos.listReleases({
@@ -43,7 +43,7 @@ async function run() {
           'Higher preview version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          releaseOctokit,
+          octokit,
           version,
           destinationBranch,
           version,
@@ -67,7 +67,7 @@ async function run() {
           'Higher stable version detected - Release will be created ...'
         )
         const response = await helpers.createRelease(
-          releaseOctokit,
+          octokit,
           version,
           destinationBranch,
           version,

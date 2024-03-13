@@ -1,8 +1,7 @@
 name: Continuous Integration
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
       - develop
@@ -20,6 +19,5 @@ jobs:
         id: test-action
         uses: ./
         with:
-          version: 0.0.2-preview.3
+          version: 0.0.2-preview.4
           token: ${{github.token}}
-          release-token: ${{secrets.RELEASE_TOKEN}}
