@@ -11,8 +11,6 @@ async function run() {
     const octokit = github.getOctokit(token)
     const payload = github.context.payload
 
-    const test = 'test'
-
     if (!payload.pull_request) {
       throw new Error('This event is not a pull request event.')
     }
