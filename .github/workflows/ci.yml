@@ -20,6 +20,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          version: 0.0.2-preview.2
+          version: 0.0.2-preview.3
           token: ${{github.token}}
           release-token: ${{secrets.RELEASE_TOKEN}}

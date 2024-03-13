@@ -143,12 +143,6 @@ const validateVersion = (strippedVersion, destinationBranch) => {
       process.exit()
     }
   }
-  if (destinationBranch === 'develop') {
-    if (!strippedVersion.isPreview) {
-      core.setFailed('Cannot merge non-preview version into develop')
-      process.exit()
-    }
-  }
 }
 
 module.exports = {
