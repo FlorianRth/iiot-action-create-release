@@ -20,5 +20,5 @@ jobs:
         id: test-action
         uses: ./
         with:
-          version: 0.0.2-preview.1
+          version: 0.0.2-preview.2
           token: ${{github.token}}
