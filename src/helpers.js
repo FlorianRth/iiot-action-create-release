@@ -1,4 +1,31 @@
 const core = require('@actions/core')
+const github = require('@actions/github')
+
+const createRelease = async (
+  octokit,
+  tagName,
+  targetCommitish,
+  releaseName,
+  body
+) => {
+  try {
+    const owner = github.context.repo.owner
+    const repo = github.context.repo.repo
+
+    const response = await octokit.rest.repos.createRelease({
+      owner,
+      repo,
+      tag_name: tagName,
+      target_commitish: targetCommitish,
+      name: releaseName,
+      body
+    })
+
+    return response.data
+  } catch (error) {
+    core.setFailed(`Failed to create release: ${error.message}`)
+  }
+}
 
 const stripVersion = version => {
   // major.minor.patch
@@ -30,16 +57,19 @@ const checkVersionFormat = version => {
 
   if (parts.length > 2) {
     core.setFailed('Invalid version format')
+    process.exit()
   }
 
   const numbers = parts[0].split('.')
   if (numbers.length !== 3) {
     core.setFailed('Invalid version format')
+    process.exit()
   }
 
   for (const number of numbers) {
     if (isNaN(number)) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
   }
 
@@ -47,12 +77,15 @@ const checkVersionFormat = version => {
     const previewParts = parts[1].split('.')
     if (previewParts.length !== 2) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
     if (previewParts[0] !== 'preview') {
       core.setFailed('Invalid version format')
+      process.exit()
     }
     if (isNaN(previewParts[1])) {
       core.setFailed('Invalid version format')
+      process.exit()
     }
   }
 }
@@ -67,14 +100,15 @@ const getLatestReleases = releases => {
     if (/^\d+\.\d+\.\d+$/.test(release.tag_name)) {
       if (
         !latestStableRelease ||
-        compareVersions(release.tag_name, latestStableRelease) > 0
+        isVersionAGreaterThanVersionB(release.tag_name, latestStableRelease) > 0
       ) {
         latestStableRelease = release.tag_name
       }
     } else if (/^\d+\.\d+\.\d+-preview\.\d+$/.test(release.tag_name)) {
       if (
         !latestPreviewRelease ||
-        compareVersions(release.tag_name, latestPreviewRelease) > 0
+        isVersionAGreaterThanVersionB(release.tag_name, latestPreviewRelease) >
+          0
       ) {
         latestPreviewRelease = release.tag_name
       }
@@ -84,7 +118,7 @@ const getLatestReleases = releases => {
   return { latestStableRelease, latestPreviewRelease }
 }
 
-const compareVersions = (versionA, versionB) => {
+const isVersionAGreaterThanVersionB = (versionA, versionB) => {
   const partsA = versionA.split('.').map(part => parseInt(part))
   const partsB = versionB.split('.').map(part => parseInt(part))
 
@@ -102,4 +136,26 @@ const compareVersions = (versionA, versionB) => {
   return 0
 }
 
-module.exports = { stripVersion, checkVersionFormat }
+const validateVersion = (strippedVersion, destinationBranch) => {
+  if (destinationBranch === 'main' || destinationBranch === 'master') {
+    if (strippedVersion.isPreview) {
+      core.setFailed('Cannot merge preview version into main / master')
+      process.exit()
+    }
+  }
+  if (destinationBranch === 'develop') {
+    if (!strippedVersion.isPreview) {
+      core.setFailed('Cannot merge non-preview version into develop')
+      process.exit()
+    }
+  }
+}
+
+module.exports = {
+  stripVersion,
+  checkVersionFormat,
+  getLatestReleases,
+  isVersionAGreaterThanVersionB,
+  validateVersion,
+  createRelease
+}

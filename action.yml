@@ -7,7 +7,10 @@ inputs:
     description: 'Version from package.json'
     required: true
   token:
-    description: Github Token (e.g. secrets.GITHUB_TOKEN)
+    description: Github Token ( e.g. secrets.GITHUB_TOKEN )
+    required: true
+  release-token:
+    description: Token with permission to create a release
     required: true
 
 runs:

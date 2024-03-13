@@ -2,12 +2,10 @@ name: Continuous Integration
 
 on:
   pull_request:
+    types: [closed]
     branches:
       - main
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+      - develop
 
 jobs:
   test-action:
@@ -22,5 +20,6 @@ jobs:
         id: test-action
         uses: ./
         with:
-          version: 1.0.1
+          version: 0.0.2-preview.2
           token: ${{github.token}}
+          release-token: ${{secrets.RELEASE_TOKEN}}
